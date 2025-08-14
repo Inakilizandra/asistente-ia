@@ -16,9 +16,18 @@ export default async function handler(req, res) {
     });
 
     const data = await gptResponse.json();
+
+    // Validar respuesta
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error("Respuesta inesperada de OpenAI:", data);
+      return res.status(500).send("Error: Respuesta inesperada de OpenAI. Revisa logs para más detalles.");
+    }
+
+    // Enviar respuesta de GPT
     res.status(200).send(data.choices[0].message.content);
 
   } catch (error) {
-    res.status(500).send("Error: " + error.message);
+    console.error("Error llamando a OpenAI:", error);
+    res.status(500).send("Error interno del servidor al llamar a OpenAI");
   }
 }
