@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Asistente IA</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f4; }
+  #output { background: white; padding: 20px; border-radius: 10px; min-height: 200px; }
+  button { padding: 10px 20px; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<h1>🗣️ Mi Asistente IA</h1>
+<div id="output">Pulsa "Hablar" y dime qué necesitas.</div>
+<button id="speakBtn">Hablar</button>
+
+<script>
+const output = document.getElementById('output');
+const speakBtn = document.getElementById('speakBtn');
+
+const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+recognition.lang = 'es-ES';
+recognition.interimResults = false;
+
+speakBtn.onclick = () => {
+  recognition.start();
+};
+
+recognition.onresult = async (event) => {
+  const text = event.results[0][0].transcript;
+  output.innerHTML = `<b>Tú:</b> ${text}`;
+  
+  // Decide si usar GPT o respuesta simple
+  let response;
+  if (text.toLowerCase().includes("calendario") || text.toLowerCase().includes("evento") || text.toLowerCase().includes("reunión")) {
+    response = await fetch("/api/gpt?prompt=" + encodeURIComponent(text));
+    response = await response.text();
+  } else {
+    response = "Entendido ✅. Lo apunto en tu lista.";
+  }
+
+  output.innerHTML += `<br><b>IA:</b> ${response}`;
+  
+  const utterance = new SpeechSynthesisUtterance(response);
+  speechSynthesis.speak(utterance);
+};
+</script>
+
+</body>
+</html>
